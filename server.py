@@ -48,6 +48,7 @@ if __name__ == "__main__":
     # parse arguments for server configuration
     server_ip = sys.argv[1]
 
+    #server_ip = '127.0.1.20'
     print('Starting the server at {}:{}, with filesystem root directory set to {}'.format(server_ip, PORT, SERVER_BASE_DIR))
 
     run(server_ip) # start up the server
