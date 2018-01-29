@@ -1,6 +1,7 @@
 import http.server
 import os
 import sys
+from http import HTTPStatus
 
 # load custom deployment settings
 from settings import SERVER_BASE_DIR, PORT
@@ -20,7 +21,7 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         print('Received a GET request')
-        self.send_response(200) # server is OK
+        self.send_response(HTTPStatus.OK) # server is OK
 
         # if self.path == IMGS_DIR_LISTING_FILEPATH:
         #     updateImagesDirectoryListing()
