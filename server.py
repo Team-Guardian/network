@@ -17,11 +17,17 @@ def updateImagesDirectoryListing():
 
 class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
 
-    # don't override __init__() method
+    # don't override the __init__() method
 
     def do_GET(self):
-        print('Received a GET request')
-        self.send_response(HTTPStatus.OK) # server is OK
+        if self.path == "/index.html":
+            pass
+        else:
+            # check if requested file exists
+            if os.path.exists(SERVER_BASE_DIR + self.path):
+                self.send_response(HTTPStatus.OK)
+            else:
+                self.send_error(HTTPStatus.NOT_FOUND, 'File not found')
 
         # if self.path == IMGS_DIR_LISTING_FILEPATH:
         #     updateImagesDirectoryListing()
