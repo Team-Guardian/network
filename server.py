@@ -19,26 +19,29 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
 
     # don't override the __init__() method
 
+    def sendHeaders(self):
+        if self.path.endswith(('.jpg', '.jpeg')):
+            self.send_header('Content-type', 'image/jpeg')
+
+    def sendFile(self):
+        with open(SERVER_BASE_DIR + self.path, 'rb') as f:
+            self.wfile.write(f.read())
+        f.close()
+
     def do_GET(self):
         if self.path == "/index.html":
             pass
         else:
             # check if requested file exists
             if os.path.exists(SERVER_BASE_DIR + self.path):
-                self.send_response(HTTPStatus.OK)
+                self.send_response(HTTPStatus.OK) # confirm to client everything is OK
+                
+                self.sendHeaders()
+                self.end_headers()
+                
+                self.sendFile()
             else:
                 self.send_error(HTTPStatus.NOT_FOUND, 'File not found')
-
-        # if self.path == IMGS_DIR_LISTING_FILEPATH:
-        #     updateImagesDirectoryListing()
-
-        # self.send_header('Content-type', 'text/plain')
-        # self.end_headers()
-
-        # # send requested file
-        # with open(SERVER_BASE_DIR + self.path, 'rb') as f:
-        #     self.wfile.write(f.read())
-        # f.close()
 
     def do_POST(self):
         print('Received a POST request')
