@@ -30,3 +30,15 @@ class TestServerReturnStatusCodes:
     def test_do_get_bad_path_return_NOT_FOUND(self, http_request_handler):
         server.ServerRequestHandler.do_GET(http_request_handler)
         http_request_handler.send_error.assert_called_with(HTTPStatus.NOT_FOUND)
+
+class TestResponseHeaderGenerator:
+    @pytest.mark.parametrize("extension, expected_content_type", [
+            ("foo.jpg", "image/jpeg"),
+            ("foo.jpeg", "image/jpeg"),
+            ("foo.txt", "text/plain"),
+    ])
+    def test_sendHeaders_content_type(self, http_request_handler, extension, expected_content_type):
+        http_request_handler.path = extension
+        server.ServerRequestHandler.sendHeaders(http_request_handler)
+        http_request_handler.send_header.assert_called_with('Content-type', expected_content_type)
+        http_request_handler.end_headers.assert_called() # don't forget to explicitly stop sending headers
