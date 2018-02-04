@@ -1,47 +1,58 @@
 import http.server
 import os
 import sys
+import ssl
 from http import HTTPStatus
 
 # load custom deployment settings
 from settings import SERVER_BASE_DIR, PORT
 
-IMGS_DIR_LISTING_FILEPATH = '/imgs/imgs-listing.txt'
-
-def updateImagesDirectoryListing():
-    with open(SERVER_BASE_DIR + IMGS_DIR_LISTING_FILEPATH, 'w') as f:
-        dir_listing = os.listdir(SERVER_BASE_DIR + '/imgs') 
-                                                # get a list of all imgs in directory
-        for item in dir_listing:
-            f.write('{}\n'.format(item)) # only keep image filename
+content_type_dict = {'.jpg':'image/jpeg', 
+                    '.jpeg':'image/jpeg', 
+                    '.txt':'text/plain'}
 
 class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
 
     # don't override the __init__() method
 
+    def sendDirectoryList(self):
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        
+        for listing in os.listdir(self.path): 
+            self.wfile.write(listing.encode())
+            self.wfile.write('\n'.encode()) 
+                            # convert str to byte stream and send with separators
+
     def sendHeaders(self):
-        if self.path.endswith(('.jpg', '.jpeg')):
-            self.send_header('Content-type', 'image/jpeg')
+        _, file_ext = os.path.splitext(self.path) # get file extension
+        self.send_header('Content-type', content_type_dict[file_ext])
+        self.end_headers()
 
     def sendFile(self):
-        with open(SERVER_BASE_DIR + self.path, 'rb') as f:
+        with open(self.path, 'rb') as f:
             self.wfile.write(f.read())
         f.close()
 
+    def do_HEAD(self): # request not supported
+        self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
+
     def do_GET(self):
-        if self.path == "/index.html":
-            pass
-        else:
-            # check if requested file exists
-            if os.path.exists(SERVER_BASE_DIR + self.path):
-                self.send_response(HTTPStatus.OK) # confirm to client everything is OK
-                
-                self.sendHeaders()
-                self.end_headers()
-                
-                self.sendFile()
-            else:
-                self.send_error(HTTPStatus.NOT_FOUND, 'File not found')
+        self.path = SERVER_BASE_DIR + self.path # modify the path to serve from root directory
+        
+        if not os.path.exists(self.path): # requested file/directory doesn't exist
+            self.send_error(HTTPStatus.NOT_FOUND)
+            return
+
+        self.send_response(HTTPStatus.OK) # by now we know we're OK
+
+        if os.path.isdir(self.path): # general request for directory listing
+            self.sendDirectoryList()
+            return
+
+        # if path is not a directory, it's a file
+        self.sendHeaders()
+        self.sendFile()
 
     def do_POST(self):
         print('Received a POST request')
@@ -50,7 +61,13 @@ def run(server_ip):
     server_addr = (server_ip, PORT) # define network addr of this machine
 
     httpd = http.server.HTTPServer(server_addr, ServerRequestHandler) # create the server
+    # httpd.socket = ssl.wrap_socket(httpd.socket, 
+    #                                 certfile='server.pem', 
+    #                                 server_side=True)
+                                    # wrap underlying socket in SSL and use server-side behavior
+    
     print('Server is running...')
+    
     httpd.serve_forever() # begin listening for events
 
 if __name__ == "__main__":
