@@ -1,3 +1,7 @@
 .idea
 **/.cache
 **/__pycache__
+client_log.log
+client_log.log.1
+server_log.log
+server_log.log.1
