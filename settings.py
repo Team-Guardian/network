@@ -9,7 +9,7 @@ import os
 #
 
 # All requests to the server are relative to SERVER_BASE_DIR
-SERVER_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname((os.path.abspath(__file__)))))
+SERVER_BASE_DIR = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
 
 #
 # Common settings
