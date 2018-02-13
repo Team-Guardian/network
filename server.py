@@ -1,7 +1,6 @@
 import http.server
 import os
 import sys
-import ssl
 from http import HTTPStatus
 
 # load custom deployment settings
@@ -26,7 +25,10 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def sendHeaders(self):
         _, file_ext = os.path.splitext(self.path) # get file extension
-        self.send_header('Content-type', content_type_dict[file_ext])
+        try:
+            self.send_header('Content-type', content_type_dict[file_ext])
+        except:
+            pass # add logging and error handling here
         self.end_headers()
 
     def sendFile(self):
@@ -54,27 +56,15 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
         self.sendHeaders()
         self.sendFile()
 
-    def do_POST(self):
-        print('Received a POST request')
+    def do_POST(self): # request not currently supported
+        self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
 
 def run(server_ip):
-    server_addr = (server_ip, PORT) # define network addr of this machine
-
-    httpd = http.server.HTTPServer(server_addr, ServerRequestHandler) # create the server
-    # httpd.socket = ssl.wrap_socket(httpd.socket, 
-    #                                 certfile='server.pem', 
-    #                                 server_side=True)
-                                    # wrap underlying socket in SSL and use server-side behavior
-    
-    print('Server is running...')
-    
+    httpd = http.server.HTTPServer((server_ip, PORT), ServerRequestHandler) # create the server
+    print('Server running at {}:{}, with filesystem root directory set to {}'.format(server_ip, PORT, SERVER_BASE_DIR))
     httpd.serve_forever() # begin listening for events
 
 if __name__ == "__main__":
 
-    # parse arguments for server configuration
-    server_ip = sys.argv[1]
-
-    print('Starting the server at {}:{}, with filesystem root directory set to {}'.format(server_ip, PORT, SERVER_BASE_DIR))
-
+    server_ip = sys.argv[1] # parse arguments for server configuration
     run(server_ip) # start up the server
