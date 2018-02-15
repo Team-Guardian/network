@@ -1,5 +1,3 @@
-import os
-
 #
 # Client-specific settings
 #
@@ -16,4 +14,4 @@ SERVER_BASE_DIR = "/var/www"
 #
 
 # Port the server will accept requests on
-PORT = 80
+PORT = 1346
