@@ -65,5 +65,5 @@ def run(server_ip):
     httpd.serve_forever() # begin listening for events
 
 if __name__ == "__main__":
-    server_ip = sys.argv[1] # parse arguments for server configuration
+    server_ip = "0.0.0.0"
     run(server_ip) # start up the server

@@ -9,11 +9,11 @@ import os
 #
 
 # All requests to the server are relative to SERVER_BASE_DIR
-SERVER_BASE_DIR = os.path.dirname(os.path.dirname((os.path.abspath(__file__))))
+SERVER_BASE_DIR = "/var/www"
 
 #
 # Common settings
 #
 
 # Port the server will accept requests on
-PORT = 9999
+PORT = 80
