@@ -55,7 +55,7 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
         # if path is not a directory, it's a file
         self.sendHeaders()
         self.sendFile()
-
+        
     def do_POST(self): # request not currently supported
         self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
 
