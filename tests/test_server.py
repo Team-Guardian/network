@@ -12,9 +12,9 @@ def http_request_handler():
 # don't write the __init__ method for classes
 
 class TestServerReturnStatusCodes:
-    @pytest.fixture(params=["/", "/images"])
-    def good_path(self, http_request_handler, request):
-        http_request_handler.path = request.param
+    @pytest.fixture()
+    def good_path(self, http_request_handler):
+        http_request_handler.path = "/"
 
     @pytest.mark.usefixtures("good_path")
     def test_do_get_good_path_return_OK(self, http_request_handler):
