@@ -14,8 +14,8 @@ class Client():
 
         self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
 
-    def buildLocalImageDirectoryList(self):
-        for file in os.listdir(CLIENT_BASE_DIR): # build a list of locally hosted images
+    def buildLocalImageDirectoryList(self): # build a list of locally hosted images
+        for file in os.listdir('{}/{}'.format(CLIENT_BASE_DIR, CLIENT_IMG_DIR)): 
             if file.endswith('.jpg'):
                 self.local_images.append(file)
 
