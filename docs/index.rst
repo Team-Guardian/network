@@ -8,6 +8,6 @@ Contents
 
 .. toctree::
 
-    getting_started
-    server
-    client
+    Server <server>
+    Client <client>
+    For Developers <for_developers>
