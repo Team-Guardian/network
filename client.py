@@ -1,16 +1,4 @@
 import http.client
-<<<<<<< Updated upstream
-import sys
-
-server_ip = sys.argv[1]
-#server_ip = "127.0.1.10"
-x = http.client.HTTPConnection(server_ip, 9999)
-x.connect()
-x.request('GET', '/img/imgs-listen.txt')
-y = x.getresponse()
-z = y.read()
-print(z)
-=======
 import os
 from Settings import PORT, CLIENT_DIR
 import logging
@@ -65,4 +53,4 @@ class Client(object):
                 elif isinstance(err, ConnectionRefusedError):
                     logging.error("Server is refusing connection.")
                     pass
->>>>>>> Stashed changes
+
