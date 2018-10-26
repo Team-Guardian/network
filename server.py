@@ -6,6 +6,8 @@ from http import HTTPStatus
 # load custom deployment settings
 from settings import SERVER_BASE_DIR, PORT
 
+
+
 content_type_dict = {'.jpg':'image/jpeg', 
                     '.jpeg':'image/jpeg', 
                     '.txt':'text/plain'}

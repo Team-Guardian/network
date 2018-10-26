@@ -22,6 +22,7 @@ class Client(object):
             try:
                 self.server_connection.request('GET', '/img/')
                 self.server_list = self.server_connection.getresponse().read().decode("utf-8").splitlines()
+                self.server_connection.close()
             except Exception as err:
                    self.clientExceptionHandler(err)
 
@@ -33,10 +34,10 @@ class Client(object):
                             pass
                         else:
                             self.server_connection.request('GET', '/img/{}'.format(item))
-                            with open("{}".format(item),'wb') as f:
+                            with open(CLIENT_DIR + "{}".format(item),'wb') as f:
                                 f.write(self.server_connection.getresponse().read())
                                 print('Added {}'.format(item))
-                            f.close()
+                            self.server_connection.close()
                             self.client_list.append(item)
             except Exception as err:
                 self.clientExceptionHandler(err)
