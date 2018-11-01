@@ -52,14 +52,16 @@ class Client(object):
                         if item in self.client_list:
                             pass
                         else:
-                            self.server_connection.request('GET', '/img/{}'.format(item))
-                            with open(CLIENT_DIR + "{}".format(item),'wb') as f:
+                            self.server_connection.request('GET', '/img/{}'.format(item.replace(' ', '%20')))
+                            with open(CLIENT_DIR + "{}".format(item.replace('%20',' ')),'wb') as f:
                                 f.write(self.server_connection.getresponse().read())
                                 print('Added {}'.format(item))
                             self.server_connection.close()
                             self.client_list.append(item)
             except Exception as err:
                 self.clientExceptionHandler(err)
+                self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
+                self.updateClientList()
 
         def clientExceptionHandler(self,err):
                 print(type(err).__name__)
@@ -72,8 +74,5 @@ class Client(object):
                     logging.error("Server didn't respond. Check server activity!")
                 elif isinstance(err, ConnectionRefusedError):
                     logging.error("Server is refusing connection.")
-                    pass
-
-if __name__ == '__main__':
-    x = Client()
-    x.uploadConfig()
+                else:
+                    logging.error(str(type(err).__name__))

@@ -42,7 +42,7 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
 
     def do_GET(self):
-        self.path = SERVER_BASE_DIR + self.path # modify the path to serve from root directory
+        self.path = SERVER_BASE_DIR + self.path.replace('%20',' ') # modify the path to serve from root directory
         
         if not os.path.exists(self.path): # requested file/directory doesn't exist
             self.send_error(HTTPStatus.NOT_FOUND)
