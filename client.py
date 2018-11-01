@@ -1,7 +1,13 @@
 import http.client
-import os
-from Settings import PORT, CLIENT_DIR
+import os, time
+# from Settings import PORT, CLIENT_DIR         #Linux
+CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
 import logging
+
+
+CONFIG = os.getcwd() + '\\client_imgs\\demo.txt' #CONFIG file location
+CONFIG_FILENAME = '/demo.txt'
+PORT=5000
 
 logging.basicConfig(filename="logfile.log", filemode="w", level=logging.DEBUG,
 format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
@@ -16,6 +22,19 @@ class Client(object):
             for file in os.listdir(CLIENT_DIR):
                 if file.endswith('.jpg'):
                     self.client_list.append(file)
+
+        #Uploads the config file
+        #Chosen by the CONFIG and CONFIG_FILENAME global variables
+        def uploadConfig(self):
+            with open(CONFIG, 'rb') as f:
+                item = f.read()
+            self.server_connection.request('POST', CONFIG_FILENAME,item)
+            print(self.server_connection.getresponse().status)
+            self.server_connection.close()
+
+        #Resets the Connection
+        def resetConnection(self):
+            self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
 
         def requestServer(self):
               #Get server directory list
@@ -55,3 +74,6 @@ class Client(object):
                     logging.error("Server is refusing connection.")
                     pass
 
+if __name__ == '__main__':
+    x = Client()
+    x.uploadConfig()
