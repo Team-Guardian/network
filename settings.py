@@ -1,6 +1,10 @@
 #
 # Client-specific settings
 #
+CLIENT_DIR = "/var/www"
+CONFIG_FILENAME = '/config.txt'
+CONFIG = CLIENT_DIR + CONFIG_FILENAME
+
 
 #
 # Server-specific settings

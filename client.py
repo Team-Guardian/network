@@ -1,6 +1,6 @@
 import http.client
 import os, time
-# from Settings import PORT, CLIENT_DIR         #Linux
+# from settings import PORT, CLIENT_DIR, CONFIG_FILENAME, CONFIG         #Linux
 CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
 import logging
 
@@ -26,15 +26,14 @@ class Client(object):
         #Uploads the config file
         #Chosen by the CONFIG and CONFIG_FILENAME global variables
         def uploadConfig(self):
-            with open(CONFIG, 'rb') as f:
-                item = f.read()
-            self.server_connection.request('POST', CONFIG_FILENAME,item)
-            print(self.server_connection.getresponse().status)
-            self.server_connection.close()
-
-        #Resets the Connection
-        def resetConnection(self):
-            self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
+            try:
+                with open(CONFIG, 'rb') as f:
+                    item = f.read()
+                self.server_connection.request('POST', CONFIG_FILENAME,item)
+                print(self.server_connection.getresponse().status)
+                self.server_connection.close()
+            except Exception as err:
+                self.clientExceptionHandler(err)
 
         def requestServer(self):
               #Get server directory list
@@ -45,6 +44,14 @@ class Client(object):
             except Exception as err:
                    self.clientExceptionHandler(err)
 
+        #Continuously tries to download files
+        def updateClientFiles(retryLimit=None):
+            count = 0
+            while(retryLimit == None or count < retryLimit):
+                count += 1
+                self.updateClientList()
+
+        #Downloads all files not in self.client_list
         def updateClientList(self):
             try:
                 #Compare the server and client image list
@@ -59,9 +66,9 @@ class Client(object):
                             self.server_connection.close()
                             self.client_list.append(item)
             except Exception as err:
+                #Handles error and resets the connection
                 self.clientExceptionHandler(err)
                 self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
-                self.updateClientList()
 
         def clientExceptionHandler(self,err):
                 print(type(err).__name__)
