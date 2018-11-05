@@ -1,13 +1,12 @@
 import http.client
 import os, time
-# from settings import PORT, CLIENT_DIR, CONFIG_FILENAME, CONFIG         #Linux
-CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
 import logging
+from settings import PORT, CLIENT_DIR, CONFIG_FILENAME, CONFIG         #Linux
 
-
-CONFIG = os.getcwd() + '\\client_imgs\\demo.txt' #CONFIG file location
-CONFIG_FILENAME = '/demo.txt'
-PORT=5000
+# CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
+# CONFIG = os.getcwd() + '\\client_imgs\\demo.txt' #CONFIG file location
+# CONFIG_FILENAME = '/demo.txt'
+# PORT=5000
 
 logging.basicConfig(filename="logfile.log", filemode="w", level=logging.DEBUG,
 format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
@@ -83,3 +82,8 @@ class Client(object):
                     logging.error("Server is refusing connection.")
                 else:
                     logging.error(str(type(err).__name__))
+
+if __name__ == "__main__":
+    x = Client()
+    x.requestServer()
+    x.updateClientList()

@@ -1,7 +1,7 @@
 #
 # Client-specific settings
 #
-CLIENT_DIR = "/var/www"
+CLIENT_DIR = "/var/www/client_dir/"
 CONFIG_FILENAME = '/config.txt'
 CONFIG = CLIENT_DIR + CONFIG_FILENAME
 
@@ -18,4 +18,4 @@ SERVER_BASE_DIR = "/var/www"
 #
 
 # Port the server will accept requests on
-PORT = 1346
+PORT = 1347

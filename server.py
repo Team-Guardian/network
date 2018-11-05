@@ -4,9 +4,10 @@ import sys
 from http import HTTPStatus
 
 # load custom deployment settings
-# from settings import SERVER_BASE_DIR, PORT    #Linux
-SERVER_BASE_DIR = os.getcwd()                   #Windows
-PORT = 5000
+from settings import SERVER_BASE_DIR, PORT    #Linux
+
+# SERVER_BASE_DIR = os.getcwd()                   #Windows
+# PORT = 5000
 
 content_type_dict = {'.jpg':'image/jpeg', 
                     '.jpeg':'image/jpeg', 
@@ -43,7 +44,8 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         self.path = SERVER_BASE_DIR + self.path.replace('%20',' ') # modify the path to serve from root directory
-        
+        print(self.path)
+        print("\n\n")
         if not os.path.exists(self.path): # requested file/directory doesn't exist
             self.send_error(HTTPStatus.NOT_FOUND)
             return
