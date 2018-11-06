@@ -1,7 +1,12 @@
 import http.client
-import os
-from Settings import PORT, CLIENT_DIR
+import os, time
 import logging
+from settings import PORT, CLIENT_DIR, CONFIG_FILENAME, CONFIG         #Linux
+
+# CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
+# CONFIG = os.getcwd() + '\\client_imgs\\demo.txt' #CONFIG file location
+# CONFIG_FILENAME = '/demo.txt'
+# PORT=5000
 
 logging.basicConfig(filename="logfile.log", filemode="w", level=logging.DEBUG,
 format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
@@ -17,14 +22,35 @@ class Client(object):
                 if file.endswith('.jpg'):
                     self.client_list.append(file)
 
+        #Uploads the config file
+        #Chosen by the CONFIG and CONFIG_FILENAME global variables
+        def uploadConfig(self):
+            try:
+                with open(CONFIG, 'rb') as f:
+                    item = f.read()
+                self.server_connection.request('POST', CONFIG_FILENAME,item)
+                print(self.server_connection.getresponse().status)
+                self.server_connection.close()
+            except Exception as err:
+                self.clientExceptionHandler(err)
+
         def requestServer(self):
               #Get server directory list
             try:
                 self.server_connection.request('GET', '/img/')
                 self.server_list = self.server_connection.getresponse().read().decode("utf-8").splitlines()
+                self.server_connection.close()
             except Exception as err:
                    self.clientExceptionHandler(err)
 
+        #Continuously tries to download files
+        def updateClientFiles(retryLimit=None):
+            count = 0
+            while(retryLimit == None or count < retryLimit):
+                count += 1
+                self.updateClientList()
+
+        #Downloads all files not in self.client_list
         def updateClientList(self):
             try:
                 #Compare the server and client image list
@@ -32,14 +58,16 @@ class Client(object):
                         if item in self.client_list:
                             pass
                         else:
-                            self.server_connection.request('GET', '/img/{}'.format(item))
-                            with open("{}".format(item),'wb') as f:
+                            self.server_connection.request('GET', '/img/{}'.format(item.replace(' ', '%20')))
+                            with open(CLIENT_DIR + "{}".format(item.replace('%20',' ')),'wb') as f:
                                 f.write(self.server_connection.getresponse().read())
                                 print('Added {}'.format(item))
-                            f.close()
+                            self.server_connection.close()
                             self.client_list.append(item)
             except Exception as err:
+                #Handles error and resets the connection
                 self.clientExceptionHandler(err)
+                self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
 
         def clientExceptionHandler(self,err):
                 print(type(err).__name__)
@@ -52,5 +80,10 @@ class Client(object):
                     logging.error("Server didn't respond. Check server activity!")
                 elif isinstance(err, ConnectionRefusedError):
                     logging.error("Server is refusing connection.")
-                    pass
+                else:
+                    logging.error(str(type(err).__name__))
 
+if __name__ == "__main__":
+    x = Client()
+    x.requestServer()
+    x.updateClientList()
