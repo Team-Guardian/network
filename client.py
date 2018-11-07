@@ -22,6 +22,12 @@ class Client(object):
                 if file.endswith('.jpg'):
                     self.client_list.append(file)
 
+        # Description:
+        #     Uploads the config file into the server.
+        #     Global variables used: (CONFIG and CONFIG_FILENAME)
+        # Return:
+        #     True            - Success
+        #     False           - Fails
         #Uploads the config file
         #Chosen by the CONFIG and CONFIG_FILENAME global variables
         def uploadConfig(self):
@@ -31,26 +37,44 @@ class Client(object):
                 self.server_connection.request('POST', CONFIG_FILENAME,item)
                 print(self.server_connection.getresponse().status)
                 self.server_connection.close()
+                return True
             except Exception as err:
                 self.clientExceptionHandler(err)
+                return False
 
+        # Description:
+        #     Obtains the server directory list. Places it into self.server_list
+        # Return:
+        #     True            - Success
+        #     False           - Fails
         def requestServer(self):
-              #Get server directory list
             try:
                 self.server_connection.request('GET', '/img/')
                 self.server_list = self.server_connection.getresponse().read().decode("utf-8").splitlines()
                 self.server_connection.close()
+                return True
             except Exception as err:
-                   self.clientExceptionHandler(err)
-
-        #Continuously tries to download files
+                self.clientExceptionHandler(err)
+                return False
+                
+        # Description:
+        #    Downloads the latest files. Retries until it recieves the files.
+        # Parameters:
+        #     retryLimit         - Number of tries it should do (Must be positive)
+        # Return:
+        #     True               - Success
+        #     False              - Fails
         def updateClientFiles(retryLimit=None):
-            count = 0
-            while(retryLimit == None or count < retryLimit):
+            count = 1
+            while(not(self.updateClientList()) and (retryLimit == None or count < retryLimit)):
                 count += 1
-                self.updateClientList()
+            return True if (count > retryLimit) else False
 
-        #Downloads all files not in self.client_list
+        # Description:
+        #     Downloads all files that are not in self.client_list
+        # Return:
+        #     True                - Success
+        #     False               - Fails
         def updateClientList(self):
             try:
                 #Compare the server and client image list
@@ -64,10 +88,12 @@ class Client(object):
                                 print('Added {}'.format(item))
                             self.server_connection.close()
                             self.client_list.append(item)
+                return True
             except Exception as err:
                 #Handles error and resets the connection
                 self.clientExceptionHandler(err)
                 self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
+                return False
 
         def clientExceptionHandler(self,err):
                 print(type(err).__name__)
@@ -82,8 +108,3 @@ class Client(object):
                     logging.error("Server is refusing connection.")
                 else:
                     logging.error(str(type(err).__name__))
-
-if __name__ == "__main__":
-    x = Client()
-    x.requestServer()
-    x.updateClientList()
