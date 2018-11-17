@@ -22,6 +22,11 @@ class Client(object):
                 if file.endswith('.jpg'):
                     self.client_list.append(file)
 
+        def buildLocalImageDirectoryList(self): # build a list of locally hosted images #Untested (Probably won't work)
+            for file in os.listdir('{}/{}'.format(CLIENT_BASE_DIR, CLIENT_IMG_DIR)): 
+                if file.endswith('.jpg'):
+                    self.local_images.append(file)
+                    
         # Description:
         #     Uploads the config file into the server.
         #     Global variables used: (CONFIG and CONFIG_FILENAME)
