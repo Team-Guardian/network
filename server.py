@@ -4,7 +4,10 @@ import sys
 from http import HTTPStatus
 
 # load custom deployment settings
-from settings import SERVER_BASE_DIR, PORT
+from settings import SERVER_BASE_DIR, PORT    #Linux
+
+# SERVER_BASE_DIR = os.getcwd()                   #Windows
+# PORT = 5000
 
 content_type_dict = {'.jpg':'image/jpeg', 
                     '.jpeg':'image/jpeg', 
@@ -40,8 +43,9 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
 
     def do_GET(self):
-        self.path = SERVER_BASE_DIR + self.path # modify the path to serve from root directory
-        
+        self.path = SERVER_BASE_DIR + self.path.replace('%20',' ') # modify the path to serve from root directory
+        print(self.path)
+        print("\n\n")
         if not os.path.exists(self.path): # requested file/directory doesn't exist
             self.send_error(HTTPStatus.NOT_FOUND)
             return
@@ -56,8 +60,16 @@ class ServerRequestHandler(http.server.BaseHTTPRequestHandler):
         self.sendHeaders()
         self.sendFile()
         
-    def do_POST(self): # request not currently supported
-        self.send_error(HTTPStatus.METHOD_NOT_ALLOWED)
+    def do_POST(self): #Use the post request to upload files.
+        print('Obtained file with content length of {}'.format(self.headers['Content-Length']))
+        item = self.rfile.read(int(self.headers['Content-Length']))
+
+        #Write file
+        with open(SERVER_BASE_DIR + self.path,'wb') as f:
+            f.write(item)
+
+        self.send_response(HTTPStatus.OK) #Send the ok signal
+        self.end_headers()
 
 def run(server_ip):
     httpd = http.server.HTTPServer((server_ip, PORT), ServerRequestHandler) # create the server

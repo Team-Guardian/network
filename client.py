@@ -1,66 +1,115 @@
 import http.client
-import sys
-import os
-import time
-from http import HTTPStatus
-from settings import PORT, CLIENT_BASE_DIR, SERVER_IMG_DIR, CLIENT_IMG_DIR
+import os, time
+import logging
+from settings import PORT, CLIENT_DIR, CONFIG_FILENAME, CONFIG         #Linux
 
-class Client():
-    def __init__(self, server_ip):
-        self.server_ip = server_ip
+# CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
+# CONFIG = os.getcwd() + '\\client_imgs\\demo.txt' #CONFIG file location
+# CONFIG_FILENAME = '/demo.txt'
+# PORT=5000
 
-        self.server_images = []
-        self.local_images = []
+logging.basicConfig(filename="logfile.log", filemode="w", level=logging.DEBUG,
+format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
 
-        self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
 
-    def buildLocalImageDirectoryList(self): # build a list of locally hosted images
-        for file in os.listdir('{}/{}'.format(CLIENT_BASE_DIR, CLIENT_IMG_DIR)): 
-            if file.endswith('.jpg'):
-                self.local_images.append(file)
+class Client(object):
+        def __init__(self, server_ip = "localhost"):
+            self.client_list = []
+            self.server_list = []
+            self.server_ip = server_ip #sys.argv[1]
+            self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
+            for file in os.listdir(CLIENT_DIR):
+                if file.endswith('.jpg'):
+                    self.client_list.append(file)
 
-    # Get server directory list
-    def requestImageDirectoryList(self):
-        try:
-            self.server_connection.request('GET', '{}/'.format(SERVER_IMG_DIR))
-        except:
-            return # try again later
-        
-        try:
-            self.server_images = self.server_connection.getresponse()
-        except http.client.RemoteDisconnected:
-            self.server_connection.close() # close connection now and try again later
-            return
-        
-        self.server_images = self.server_images.read().decode('utf-8').splitlines()
-
-    def requestNewImages(self):
-        for image in self.server_images:
-            if image not in self.local_images:
-                try:
-                    self.server_connection.request('GET', '{}/{}'.format(SERVER_IMG_DIR, image))
-                except:
-                    return
-
-                if self.saveImage(image) is True:
-                    self.local_images.append(image) # add image to the list if it was successfully saved
-
-    def saveImage(self, image_name):
-        with open('{}/{}/{}'.format(CLIENT_BASE_DIR, CLIENT_IMG_DIR, image_name), 'wb') as f:
+        def buildLocalImageDirectoryList(self): # build a list of locally hosted images #Untested (Probably won't work)
+            for file in os.listdir('{}/{}'.format(CLIENT_BASE_DIR, CLIENT_IMG_DIR)): 
+                if file.endswith('.jpg'):
+                    self.local_images.append(file)
+                    
+        # Description:
+        #     Uploads the config file into the server.
+        #     Global variables used: (CONFIG and CONFIG_FILENAME)
+        # Return:
+        #     True            - Success
+        #     False           - Fails
+        #Uploads the config file
+        #Chosen by the CONFIG and CONFIG_FILENAME global variables
+        def uploadConfig(self):
             try:
-                image = self.server_connection.getresponse()
-            except http.client.RemoteDisconnected:
-                self.server_connection.close() # connection will be re-opened on next request
+                with open(CONFIG, 'rb') as f:
+                    item = f.read()
+                self.server_connection.request('POST', CONFIG_FILENAME,item)
+                print(self.server_connection.getresponse().status)
+                self.server_connection.close()
+                return True
+            except Exception as err:
+                self.clientExceptionHandler(err)
                 return False
-            f.write(image.read())
-        f.close()
-        return True
 
-if __name__ == "__main__":
-    client = Client(sys.argv[1])
-    client.buildLocalImageDirectoryList()
+        # Description:
+        #     Obtains the server directory list. Places it into self.server_list
+        # Return:
+        #     True            - Success
+        #     False           - Fails
+        def requestServer(self):
+            try:
+                self.server_connection.request('GET', '/img/')
+                self.server_list = self.server_connection.getresponse().read().decode("utf-8").splitlines()
+                self.server_connection.close()
+                return True
+            except Exception as err:
+                self.clientExceptionHandler(err)
+                return False
+                
+        # Description:
+        #    Downloads the latest files. Retries until it recieves the files.
+        # Parameters:
+        #     retryLimit         - Number of tries it should do (Must be positive)
+        # Return:
+        #     True               - Success
+        #     False              - Fails
+        def updateClientFiles(retryLimit=None):
+            count = 1
+            while(not(self.updateClientList()) and (retryLimit == None or count < retryLimit)):
+                count += 1
+            return True if (count > retryLimit) else False
 
-    while True:
-        client.requestImageDirectoryList()
-        client.requestNewImages()
-        time.sleep(0.2)
+        # Description:
+        #     Downloads all files that are not in self.client_list
+        # Return:
+        #     True                - Success
+        #     False               - Fails
+        def updateClientList(self):
+            try:
+                #Compare the server and client image list
+                for item in self.server_list:
+                        if item in self.client_list:
+                            pass
+                        else:
+                            self.server_connection.request('GET', '/img/{}'.format(item.replace(' ', '%20')))
+                            with open(CLIENT_DIR + "{}".format(item.replace('%20',' ')),'wb') as f:
+                                f.write(self.server_connection.getresponse().read())
+                                print('Added {}'.format(item))
+                            self.server_connection.close()
+                            self.client_list.append(item)
+                return True
+            except Exception as err:
+                #Handles error and resets the connection
+                self.clientExceptionHandler(err)
+                self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
+                return False
+
+        def clientExceptionHandler(self,err):
+                print(type(err).__name__)
+                if isinstance(err, http.client.RemoteDisconnected) or (isinstance(err, http.client.NotConnected)) or isinstance(err,http.client.CannotSendRequest):
+                    logging.error("Resetting connection with the Server. The error is {}".format(type(err).__name__))
+                    self.server_connection.close()
+                elif isinstance(err, http.client.IncompleteRead):
+                    logging.error("Lost connection while downloading a file.")
+                elif isinstance(err, TimeoutError):
+                    logging.error("Server didn't respond. Check server activity!")
+                elif isinstance(err, ConnectionRefusedError):
+                    logging.error("Server is refusing connection.")
+                else:
+                    logging.error(str(type(err).__name__))
