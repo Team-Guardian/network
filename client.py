@@ -1,8 +1,9 @@
 import http.client
 import os, time
 import logging
-from settings import PORT, CLIENT_DIR, CONFIG_FILENAME, CONFIG         #Linux
-
+from settings import PORT, CLIENT_BASE_DIR, CLIENT_IMG_DIR        #Linux
+from settings import CONFIG_FILENAME, CONFIG
+from settings import SERVER_BASE_DIR, SERVER_IMG_DIR
 # CLIENT_DIR = os.getcwd() + '\\client_imgs\\'    #Windows
 # CONFIG = os.getcwd() + '\\client_imgs\\demo.txt' #CONFIG file location
 # CONFIG_FILENAME = '/demo.txt'
@@ -18,7 +19,7 @@ class Client(object):
             self.server_list = []
             self.server_ip = server_ip
             self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
-            for file in os.listdir(CLIENT_DIR):
+            for file in os.listdir(CLIENT_BASE_DIR + CLIENT_IMG_DIR):
                 if file.lower().endswith('.jpg'):
                     self.client_list.append(file)
         # Description:
@@ -48,7 +49,7 @@ class Client(object):
         #     False           - Fails
         def requestServer(self):
             try:
-                self.server_connection.request('GET', '/img/')
+                self.server_connection.request('GET', SERVER_IMG_DIR)
                 self.server_list = self.server_connection.getresponse().read().decode("utf-8").splitlines()
                 self.server_connection.close()
                 return True
@@ -81,8 +82,8 @@ class Client(object):
                         if item in self.client_list:
                             pass
                         else:
-                            self.server_connection.request('GET', '/img/{}'.format(item.replace(' ', '%20')))
-                            with open(CLIENT_DIR + "{}".format(item.replace('%20',' ')),'wb') as f:
+                            self.server_connection.request('GET', SERVER_IMG_DIR + '/{}'.format(item.replace(' ', '%20')))
+                            with open(CLIENT_BASE_DIR + CLIENT_IMG_DIR + "/{}".format(item.replace('%20',' ')),'wb') as f:
                                 f.write(self.server_connection.getresponse().read())
                                 print('Added {}'.format(item))
                             self.server_connection.close()

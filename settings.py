@@ -1,9 +1,11 @@
 #
 # Client-specific settings
 #
-CLIENT_DIR = "/var/www/client_dir/"
+CLIENT_BASE_DIR = "/var/www/client_dir"
+CLIENT_IMG_DIR = "/img"
+
 CONFIG_FILENAME = '/config.txt'
-CONFIG = CLIENT_DIR + CONFIG_FILENAME
+CONFIG = CLIENT_BASE_DIR + CONFIG_FILENAME
 
 
 #
@@ -12,6 +14,8 @@ CONFIG = CLIENT_DIR + CONFIG_FILENAME
 
 # All requests to the server are relative to SERVER_BASE_DIR
 SERVER_BASE_DIR = "/var/www"
+SERVER_IMG_DIR = "/img"
+
 
 #
 # Common settings
