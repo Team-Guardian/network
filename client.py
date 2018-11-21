@@ -16,17 +16,11 @@ class Client(object):
         def __init__(self, server_ip = "localhost"):
             self.client_list = []
             self.server_list = []
-            self.server_ip = server_ip #sys.argv[1]
+            self.server_ip = server_ip
             self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
             for file in os.listdir(CLIENT_DIR):
-                if file.endswith('.jpg'):
+                if file.lower().endswith('.jpg'):
                     self.client_list.append(file)
-
-        def buildLocalImageDirectoryList(self): # build a list of locally hosted images #Untested (Probably won't work)
-            for file in os.listdir('{}/{}'.format(CLIENT_BASE_DIR, CLIENT_IMG_DIR)): 
-                if file.endswith('.jpg'):
-                    self.local_images.append(file)
-                    
         # Description:
         #     Uploads the config file into the server.
         #     Global variables used: (CONFIG and CONFIG_FILENAME)
