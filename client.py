@@ -22,6 +22,21 @@ class Client(object):
             for file in os.listdir(CLIENT_BASE_DIR + CLIENT_IMG_DIR):
                 if file.lower().endswith('.jpg'):
                     self.client_list.append(file)
+
+        #Run client forever
+        def client_forever(self):
+            while(True):
+                self.requestServer()
+                self.buildLocalClientList()
+                if (self.client_list != self.server_list):
+                    self.updateClientList()
+
+        def buildLocalClientList(self):
+            self.client_list = []
+            for file in os.listdir(CLIENT_BASE_DIR + CLIENT_IMG_DIR):
+                if file.lower().endswith('.jpg'):
+                    self.client_list.append(file)
+
         # Description:
         #     Uploads the config file into the server.
         #     Global variables used: (CONFIG and CONFIG_FILENAME)
