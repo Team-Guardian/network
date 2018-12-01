@@ -14,14 +14,19 @@ format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
 
 
 class Client(object):
-        def __init__(self, server_ip = "localhost"):
+        def __init__(self, settings):
             self.client_list = []
             self.server_list = []
-            self.server_ip = server_ip
-            self.server_connection = http.client.HTTPConnection(self.server_ip, PORT)
-            for file in os.listdir(CLIENT_BASE_DIR + CLIENT_IMG_DIR):
-                if file.lower().endswith('.jpg'):
-                    self.client_list.append(file)
+            self.server_ip = settings.IP_ADDRESS
+            self.PORT = settings.PORT
+            self.SERVER_BASE_DIR = settings.SERVER_BASE_DIR
+            self.SERVER_IMG_DIR = settings.SERVER_IMG_DIR
+            self.CLIENT_BASE_DIR = settings.CLIENT_BASE_DIR
+            self.CLIENT_IMG_DIR = settings.CLIENT_IMG_DIR
+            self.CONFIG_FILENAME = settings.CONFIG_FILENAME
+            self.CONFIG = settings.CONFIG
+            self.server_connection = http.client.HTTPConnection(self.server_ip, settings.PORT)
+            self.buildLocalClientList()
 
         #Run client forever
         def client_forever(self):
@@ -33,8 +38,8 @@ class Client(object):
 
         def buildLocalClientList(self):
             self.client_list = []
-            for file in os.listdir(CLIENT_BASE_DIR + CLIENT_IMG_DIR):
-                if file.lower().endswith('.jpg'):
+            for file in os.listdir(self.CLIENT_BASE_DIR + self.CLIENT_IMG_DIR):
+                if file.lower().endswith('.jpg') or file.lower().endswith('.txt') or file.lower().endswith('.png'):
                     self.client_list.append(file)
 
         # Description:
@@ -47,9 +52,9 @@ class Client(object):
         #Chosen by the CONFIG and CONFIG_FILENAME global variables
         def uploadConfig(self):
             try:
-                with open(CONFIG, 'rb') as f:
+                with open(self.CONFIG, 'rb') as f:
                     item = f.read()
-                self.server_connection.request('POST', CONFIG_FILENAME,item)
+                self.server_connection.request('POST', self.CONFIG_FILENAME,item)
                 print(self.server_connection.getresponse().status)
                 self.server_connection.close()
                 return True
@@ -64,7 +69,7 @@ class Client(object):
         #     False           - Fails
         def requestServer(self):
             try:
-                self.server_connection.request('GET', SERVER_IMG_DIR)
+                self.server_connection.request('GET', self.SERVER_IMG_DIR)
                 self.server_list = self.server_connection.getresponse().read().decode("utf-8").splitlines()
                 self.server_connection.close()
                 return True
@@ -97,8 +102,8 @@ class Client(object):
                         if item in self.client_list:
                             pass
                         else:
-                            self.server_connection.request('GET', SERVER_IMG_DIR + '/{}'.format(item.replace(' ', '%20')))
-                            with open(CLIENT_BASE_DIR + CLIENT_IMG_DIR + "/{}".format(item.replace('%20',' ')),'wb') as f:
+                            self.server_connection.request('GET', self.SERVER_IMG_DIR + '/{}'.format(item.replace(' ', '%20')))
+                            with open(self.CLIENT_BASE_DIR + self.CLIENT_IMG_DIR + "/{}".format(item.replace('%20',' ')),'wb') as f:
                                 f.write(self.server_connection.getresponse().read())
                                 print('Added {}'.format(item))
                             self.server_connection.close()
