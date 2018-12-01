@@ -1,19 +1,28 @@
+import os
+
 class Settings:
-   def __init__(self, IP_ADDRESS, PORT, SERVER_BASE_DIR):
-       self.CLIENT_BASE_DIR = "/var/www/client_dir/"
-       self.CLIENT_IMG_DIR ="/client_img"
-       self.CONFIG_FILENAME = '/config.txt'
+   def __init__(self,
+   	IP_ADDRESS='127.0.0.1',
+    PORT=5001,
+    SERVER_BASE_DIR=os.getcwd(),
+    SERVER_IMG_DIR="/img",
+    CLIENT_BASE_DIR=os.getcwd()+"/client_DIR",
+    CLIENT_IMG_DIR="/client_img",
+    CONFIG_FILENAME="/config.txt"
+   	):
+
+       self.CLIENT_BASE_DIR = CLIENT_BASE_DIR
+       self.CLIENT_IMG_DIR = CLIENT_IMG_DIR
+       self.CONFIG_FILENAME = CONFIG_FILENAME
        self.CONFIG = self.CLIENT_BASE_DIR + self.CONFIG_FILENAME
        self.SERVER_BASE_DIR = SERVER_BASE_DIR
-       self.SERVER_IMG_DIR = "/img"
+       self.SERVER_IMG_DIR = SERVER_IMG_DIR
        self.PORT = PORT
        self.IP_ADDRESS = IP_ADDRESS
 
 #
 # Client-specific settings
 #
-
-import os
 
 CLIENT_BASE_DIR = os.getcwd() + "/client_DIR"
 CLIENT_IMG_DIR = "/client_img"
@@ -36,4 +45,4 @@ SERVER_IMG_DIR = "/img"
 #
 
 # Port the server will accept requests on
-PORT = 1347
+PORT = 5001
