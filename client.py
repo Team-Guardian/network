@@ -1,6 +1,6 @@
 import http.client
-import os, time
-import logging
+import os, time,threading,logging
+import _thread as thread
 from settings import PORT, CLIENT_BASE_DIR, CLIENT_IMG_DIR        #Linux
 from settings import CONFIG_FILENAME, CONFIG
 from settings import SERVER_BASE_DIR, SERVER_IMG_DIR
