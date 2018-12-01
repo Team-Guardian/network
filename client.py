@@ -15,6 +15,7 @@ format="%(asctime)s %(levelname)s: %(message)s", datefmt="%d/%b/%Y %H:%M:%S")
 
 class Client(object):
         def __init__(self, settings):
+            self.KILL_CLIENT = False
             self.client_list = []
             self.server_list = []
             self.server_ip = settings.IP_ADDRESS
@@ -28,9 +29,18 @@ class Client(object):
             self.server_connection = http.client.HTTPConnection(self.server_ip, settings.PORT)
             self.buildLocalClientList()
 
+        def startClient(self):
+            self.handler = threading.Thread(target=self.client_forever)
+            self.KILL_CLIENT = False
+            self.handler.start()
+
+        def killClient(self):
+            self.KILL_CLIENT=True
+            self.handler.join()
+
         #Run client forever
         def client_forever(self):
-            while(True):
+            while(not(self.KILL_CLIENT)):
                 self.requestServer()
                 self.buildLocalClientList()
                 if (self.client_list != self.server_list):
